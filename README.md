@@ -1,2 +1,3 @@
-# ink
-A super minimal, lightweight text editor
+# Ink
+
+Ink is a minimalist text editor
