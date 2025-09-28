@@ -17,6 +17,7 @@ use crossterm::{
 };
 
 mod file_system;
+mod gap_buffer;
 
 fn handle_raw_input(user_in:String) {
     if user_in == "." || user_in.ends_with("/") {
