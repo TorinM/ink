@@ -1,7 +1,6 @@
 // Module to control the gap buffer
 
 use std::fmt;
-use std::str;
 
 #[derive(Debug)]
 pub struct GapBuffer {
