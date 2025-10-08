@@ -1,13 +1,14 @@
 // Module to control the gap buffer
 
-// TODO: Replace the char usage with u8s byte representation
+use std::fmt;
+use std::str;
 
 #[derive(Debug)]
 pub struct GapBuffer {
     cursor_pos: usize,
     gap_left_ptr: usize,
     gap_right_ptr: usize,
-    data: Vec<char>,
+    data: Vec<u8>,
     gap_size: usize,
 }
 impl GapBuffer {
@@ -16,7 +17,7 @@ impl GapBuffer {
             cursor_pos: 0,
             gap_left_ptr: 0,
             gap_right_ptr: size - 1,
-            data: vec!['_'; size.try_into().unwrap()],
+            data: vec![0u8; size.try_into().unwrap()],
             gap_size: 10,
         }
     }
@@ -42,14 +43,14 @@ impl GapBuffer {
             self.grow()
         }
 
-        self.data[self.cursor_pos] = val;
+        self.data[self.cursor_pos] = val as u8;
 
         self.cursor_pos += 1;
         self.gap_left_ptr += 1;
     }
 
     fn grow(&mut self) {
-        let new_buffer = vec!['_'; self.gap_size.try_into().unwrap()];
+        let new_buffer = vec![0u8; self.gap_size.try_into().unwrap()];
     
         let index = self.cursor_pos;
 
@@ -77,5 +78,21 @@ impl GapBuffer {
 
             self.gap_left_ptr += 1;
        }
+    }
+}
+impl fmt::Display for GapBuffer {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut s: String = String::new();
+
+        for d in self.data.clone() {
+            if d == 0 {
+                s.push('_')
+            }
+            else {
+                s.push(char::from(d))
+            }
+        }
+    
+        write!(f, "{}", s)
     }
 }

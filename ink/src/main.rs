@@ -39,6 +39,8 @@ fn main() {
 
     gb.insert_data('D');
     println!("{:?}", gb);
+
+    println!("{}", gb);
 }
 
 
