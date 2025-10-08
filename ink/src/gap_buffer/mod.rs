@@ -1,59 +1,81 @@
 // Module to control the gap buffer
 
-struct GapBuffer {
-    size: u8,
-    gap_left: u8,
-    gap_right: u8,
-    buffer: Vec<char>
+// TODO: Replace the char usage with u8s byte representation
+
+#[derive(Debug)]
+pub struct GapBuffer {
+    cursor_pos: usize,
+    gap_left_ptr: usize,
+    gap_right_ptr: usize,
+    data: Vec<char>,
+    gap_size: usize,
 }
-
 impl GapBuffer {
-    // Controls the initialization of the array
-    fn from_size(size: u8) -> GapBuffer {
-        let buffer = Vec::with_capacity(size.into());
-
+    pub fn new(size: usize) -> GapBuffer {
         GapBuffer {
-            size: size,
-            gap_right: 0,
-            gap_left: size - 1,
-            buffer: buffer
+            cursor_pos: 0,
+            gap_left_ptr: 0,
+            gap_right_ptr: size - 1,
+            data: vec!['_'; size.try_into().unwrap()],
+            gap_size: 10,
         }
     }
-    // Moves the gap left in the array
-    fn left(&mut self) {
-        
+
+    pub fn move_cursor(&mut self, new_pos: usize) {
+        self.cursor_pos = new_pos;
     }
 
-    // Moves the gap right in the array
-    fn right(&mut self) {
-    }
-    
-    // Controls the growth of the size of the buffer
-    fn grow(&mut self) {
-    }
-    
-    // Controls the movement of the gap linked to the cursor insertion
-    fn move_cursor(&mut self, pos: &u8) {
-        if *pos < self.gap_right {
-            self.right();
+    pub fn move_buffer(&mut self) {
+        if self.cursor_pos < self.gap_left_ptr {
+            self.shift_left()
         } else {
-            self.left()
+            self.shift_right()
         }
     }
-    
-    // Controls data insertion operations
-    fn insert(&mut self, pos: u8, value: char) {
-        
-        if pos != self.gap_left {
-            self.move_cursor(&pos);
+
+    pub fn insert_data(&mut self, val: char) {
+        if self.cursor_pos != self.gap_left_ptr {
+            self.move_buffer()
         }
 
-        if self.gap_left == self.gap_right {
-            self.grow();
+        if self.gap_left_ptr == self.gap_right_ptr {
+            self.grow()
         }
-        
-        self.buffer[pos as usize] = value;
-        self.gap_left += 1
-         
+
+        self.data[self.cursor_pos] = val;
+
+        self.cursor_pos += 1;
+        self.gap_left_ptr += 1;
+    }
+
+    fn grow(&mut self) {
+        let new_buffer = vec!['_'; self.gap_size.try_into().unwrap()];
+    
+        let index = self.cursor_pos;
+
+        self.data.splice(index..index, new_buffer.iter().cloned());
+
+        self.gap_right_ptr = self.data.len() - 1;
+        self.gap_size = self.data.len();
+    }
+
+    fn shift_left(&mut self) {
+        while self.cursor_pos < self.gap_left_ptr {
+            self.gap_left_ptr -= 1;
+
+            self.data.swap(self.gap_right_ptr, self.gap_left_ptr);
+
+            self.gap_right_ptr -= 1;
+        }
+    }
+
+    fn shift_right(&mut self) {
+        while self.cursor_pos > self.gap_left_ptr && self.gap_right_ptr < self.gap_size - 1 {
+            self.gap_right_ptr += 1;
+
+            self.data.swap(self.gap_left_ptr, self.gap_right_ptr);
+
+            self.gap_left_ptr += 1;
+       }
     }
 }
