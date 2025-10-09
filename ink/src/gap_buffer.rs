@@ -38,6 +38,7 @@ impl GapBuffer {
         }
     }
 
+    #[allow(dead_code)] 
     pub fn move_cursor_to(&mut self, new_pos: usize) {
         self.cursor_pos = new_pos;
         self.move_buffer();
@@ -112,7 +113,7 @@ impl fmt::Display for GapBuffer {
 
         for d in self.data.clone() {
             if d == 0 {
-                s.push('_')
+                //s.push('_')
             }
             else {
                 s.push(char::from(d))

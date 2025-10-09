@@ -63,6 +63,7 @@ fn write_error<W: Write>(screen: &mut W, msg: String, screen_height: u16, flush_
             msg
         ).unwrap();
     }
+    write!(screen, "{}", style::Reset).unwrap();
 }
 
 fn write_buffer<W: Write>(screen: &mut W, buffer: &gap_buffer::GapBuffer) {
@@ -96,9 +97,7 @@ fn main() {
     
     // mainloop, each key stroke is treated as a "frame"
     for k in stdin.keys() {
-        let (x, y) = termion::terminal_size().unwrap();
-        let max_x = x;
-        let max_y = y-1;
+        let (_x, y) = termion::terminal_size().unwrap();
 
         if displayed_error {
             write_error(&mut screen, "".to_string(), y, true);
@@ -106,23 +105,16 @@ fn main() {
         }
 
         match k.as_ref().unwrap() {
-            Key::Ctrl('c') => {
-               break
-            },
-            Key::Ctrl('o') => {
-                curr_mode = operator::OperatorMode::O;
-            },
-            Key::Ctrl('e') => {
-                curr_mode = operator::OperatorMode::E;
-            },
-            Key::Ctrl('f') => {
-                curr_mode = operator::OperatorMode::F;
-            },
+            Key::Ctrl('c') => break,
+            Key::Ctrl('o') => curr_mode = operator::OperatorMode::O,
+            Key::Ctrl('e') => curr_mode = operator::OperatorMode::E,
+            Key::Ctrl('f') => curr_mode = operator::OperatorMode::F,
             //Key::Up => pos.update(0, -1),
             //Key::Down => pos.update(0, 1),
             Key::Left => gb.move_cursor_by(-1),
             Key::Right => gb.move_cursor_by(1),
             Key::Char('\n') => {},//gb.move_cursor(1),
+            Key::Esc => curr_mode = operator::OperatorMode::O,
             Key::Backspace => {
                 if matches!(curr_mode, operator::OperatorMode::E) {
                     gb.delete_data();
