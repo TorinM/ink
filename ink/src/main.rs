@@ -27,21 +27,25 @@ fn write_top_banner<W: Write>(screen: &mut W, file_name: &str, screen_len: u16) 
     write!(screen, "{}", style::Reset).unwrap();
 }
 
-fn write_bottom_banner<W: Write>(screen: &mut W, curr_mode: &operator::OperatorMode, screen_height: u16) {
+fn write_bottom_banner<W: Write>(screen: &mut W, curr_mode: &operator::OperatorMode, screen_height: u16, buffer: &gap_buffer::GapBuffer) {
+
+    write!(screen, "{}{}", termion::cursor::Goto(1, screen_height-1), termion::clear::CurrentLine).unwrap();
+    
     write!(
         screen, 
-        "{}{}{}Current Mode: {:?}. Available Modes | Operator (Ctrl+O) | Edit (Ctrl+E) | File (Ctrl+F). Use 'q' in Operator Mode to quit.",
+        "{}{}{}Current Mode: {:?}. Available Modes | Operator (Ctrl+O) | Edit (Ctrl+E) | File (Ctrl+F). Use 'q' in Operator Mode to quit. Buffer Status: {}",
         termion::cursor::Goto(1, screen_height-1),
         color::Bg(color::LightWhite),
         color::Fg(color::LightBlack),
-        curr_mode
+        curr_mode,
+        buffer.get_diagnostics()
     ).unwrap();
 
     write!(screen, "{}", style::Reset).unwrap();
     write!(screen, "{}", termion::cursor::Goto(1, 2)).unwrap();
 }
 
-fn write_error<W: Write>(screen: &mut W, msg: &str, screen_height: u16, flush_error: bool) {
+fn write_error<W: Write>(screen: &mut W, msg: String, screen_height: u16, flush_error: bool) {
     if flush_error {
         write!(
             screen,
@@ -61,23 +65,33 @@ fn write_error<W: Write>(screen: &mut W, msg: &str, screen_height: u16, flush_er
     }
 }
 
+fn write_buffer<W: Write>(screen: &mut W, buffer: &gap_buffer::GapBuffer) {
+   write!(
+       screen,
+       "{}",
+       buffer
+    ).unwrap(); 
+}
+
 fn main() {
     let mut screen = stdout().into_raw_mode().unwrap().into_alternate_screen().unwrap();
 
     let mut curr_mode = operator::OperatorMode::O;
+    let mut gb = gap_buffer::GapBuffer::new(1);
 
     let (x, y) = termion::terminal_size().unwrap();
     write_top_banner(&mut screen, "test.py", x);
-    write_bottom_banner(&mut screen, &curr_mode, y);
+    write_bottom_banner(&mut screen, &curr_mode, y, &gb);
 
     //write!(screen, "{}", style::Reset).unwrap();
-    write!(screen, "{}{}{}", termion::cursor::Goto(1, 2), termion::clear::CurrentLine, style::Underline).unwrap();
+    write!(screen, "{}{}", termion::cursor::Goto(1, 2), termion::clear::CurrentLine).unwrap();
 
     screen.flush().unwrap();
 
     let stdin = stdin();
-    let mut gb = gap_buffer::GapBuffer::new(80);
     
+    write_buffer(&mut screen, &gb);
+
     let mut displayed_error = false;
     
     // mainloop, each key stroke is treated as a "frame"
@@ -86,15 +100,13 @@ fn main() {
         let max_x = x;
         let max_y = y-1;
 
-
         if displayed_error {
-            write_error(&mut screen, "", y, true);
+            write_error(&mut screen, "".to_string(), y, true);
             displayed_error = false;
         }
 
         match k.as_ref().unwrap() {
             Key::Ctrl('c') => {
-               println!("Ending capture");
                break
             },
             Key::Ctrl('o') => {
@@ -108,19 +120,35 @@ fn main() {
             },
             //Key::Up => pos.update(0, -1),
             //Key::Down => pos.update(0, 1),
-            Key::Left => gb.move_cursor(1),
-            //Key::Right => pos.update(1, 0),
-            Key::Char(c) => gb.insert_data(*c),
-            _ => {
-                write_error(&mut screen, "Not implemented", y, false);
+            Key::Left => gb.move_cursor_by(-1),
+            Key::Right => gb.move_cursor_by(1),
+            Key::Char('\n') => {},//gb.move_cursor(1),
+            Key::Backspace => {
+                if matches!(curr_mode, operator::OperatorMode::E) {
+                    gb.delete_data();
+                }
+            }
+            Key::Char(c) => {
+                if *c == 'q' && matches!(curr_mode, operator::OperatorMode::O) {
+                    break
+                }
+                if matches!(curr_mode, operator::OperatorMode::E) {
+                    gb.insert_data(*c)
+                }
+            },
+            c => {
+                write_error(&mut screen, format!("Key not implemented: {:?}", c), y, false);
                 displayed_error = true;
             }
-        }
-        write_bottom_banner(&mut screen, &curr_mode, y);
+        };
+
+        write_bottom_banner(&mut screen, &curr_mode, y, &gb);
+
+        write_buffer(&mut screen, &gb);
+
         screen.flush().unwrap();
     }
     screen.flush().unwrap();
     write!(screen, "{}", termion::cursor::Show).unwrap();
-
 }
 

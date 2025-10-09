@@ -21,8 +21,26 @@ impl GapBuffer {
         }
     }
 
-    pub fn move_cursor(&mut self, new_pos: usize) {
+    pub fn get_diagnostics(&self) -> String {
+        let s = format!("Cursor Position: {:?} | Gap Left Pointer: {:?} | Gap Right Pointer: {:?}", self.cursor_pos, self.gap_left_ptr, self.gap_right_ptr);
+        s
+    }
+
+    pub fn move_cursor_by(&mut self, shift_val: isize) {
+        if self.cursor_pos > 0 && self.cursor_pos < self.data.len()-1 {
+            if shift_val < 0 {
+                self.cursor_pos -= shift_val.wrapping_abs() as usize;
+            }
+            else {
+                self.cursor_pos += shift_val as usize;
+            }
+            self.move_buffer();
+        }
+    }
+
+    pub fn move_cursor_to(&mut self, new_pos: usize) {
         self.cursor_pos = new_pos;
+        self.move_buffer();
     }
 
     pub fn move_buffer(&mut self) {
@@ -30,6 +48,15 @@ impl GapBuffer {
             self.shift_left()
         } else {
             self.shift_right()
+        }
+    }
+    
+    //backspace handler
+    pub fn delete_data(&mut self) {
+        if self.cursor_pos > 0 && self.gap_left_ptr > 0 {
+            self.data[self.cursor_pos] = 0u8;
+            self.cursor_pos -= 1;
+            self.gap_left_ptr -= 1;
         }
     }
 
@@ -95,3 +122,4 @@ impl fmt::Display for GapBuffer {
         write!(f, "{}", s)
     }
 }
+
