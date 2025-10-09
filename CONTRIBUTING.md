@@ -1,5 +1,11 @@
-# Contributing Guildlines
+# Contributing
 
-To submit a feature request or bug, please submit a pull request to this README.md file with additions to the "[Road Map](/README.md/#road-map)" or "[Known Issues](/README.md/#known-issues)" sections.
+Please use the following templates to fill out [bug reports](#bug-report) or [feature requests](#feature-request)
 
-For larger updates, please submit a pull request and I will review.
+## Bug Report
+
+Submit a new GitHub Issue using Bug Report Template
+
+## Feature Request
+
+Submit a new GitHub Issue using the Feature Request Template
