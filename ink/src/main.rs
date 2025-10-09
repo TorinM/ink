@@ -66,11 +66,13 @@ fn write_error<W: Write>(screen: &mut W, msg: String, screen_height: u16, flush_
     write!(screen, "{}", style::Reset).unwrap();
 }
 
-fn write_buffer<W: Write>(screen: &mut W, buffer: &gap_buffer::GapBuffer) {
-   write!(
-       screen,
-       "{}",
-       buffer
+fn write_buffer<W: Write>(screen: &mut W, buffer: &gap_buffer::GapBuffer, curr_line: u16) {
+    write!(screen, "{}{}", termion::cursor::Goto(1, curr_line), termion::clear::CurrentLine).unwrap();
+
+    write!(
+        screen,
+        "{}",
+        buffer
     ).unwrap(); 
 }
 
@@ -90,8 +92,10 @@ fn main() {
     screen.flush().unwrap();
 
     let stdin = stdin();
+
+    let curr_line: u16 = 2;
     
-    write_buffer(&mut screen, &gb);
+    write_buffer(&mut screen, &gb, curr_line);
 
     let mut displayed_error = false;
     
@@ -111,15 +115,15 @@ fn main() {
             Key::Ctrl('f') => curr_mode = operator::OperatorMode::F,
             //Key::Up => pos.update(0, -1),
             //Key::Down => pos.update(0, 1),
-            Key::Left => gb.move_cursor_by(-1),
-            Key::Right => gb.move_cursor_by(1),
-            Key::Char('\n') => {},//gb.move_cursor(1),
+            //Key::Left => gb.move_cursor_by(-1),
+            //Key::Right => gb.move_cursor_by(1),
+            //Key::Char('\n') => {},//gb.move_cursor(1),
             Key::Esc => curr_mode = operator::OperatorMode::O,
             Key::Backspace => {
                 if matches!(curr_mode, operator::OperatorMode::E) {
                     gb.delete_data();
                 }
-            }
+            },
             Key::Char(c) => {
                 if *c == 'q' && matches!(curr_mode, operator::OperatorMode::O) {
                     break
@@ -136,7 +140,7 @@ fn main() {
 
         write_bottom_banner(&mut screen, &curr_mode, y, &gb);
 
-        write_buffer(&mut screen, &gb);
+        write_buffer(&mut screen, &gb, curr_line);
 
         screen.flush().unwrap();
     }

@@ -26,6 +26,7 @@ impl GapBuffer {
         s
     }
 
+    #[allow(dead_code)] 
     pub fn move_cursor_by(&mut self, shift_val: isize) {
         if self.cursor_pos > 0 && self.cursor_pos < self.data.len()-1 {
             if shift_val < 0 {
@@ -54,11 +55,12 @@ impl GapBuffer {
     
     //backspace handler
     pub fn delete_data(&mut self) {
-        if self.cursor_pos > 0 && self.gap_left_ptr > 0 {
-            self.data[self.cursor_pos] = 0u8;
-            self.cursor_pos -= 1;
-            self.gap_left_ptr -= 1;
+         if self.cursor_pos != self.gap_left_ptr {
+            self.move_buffer()
         }
+        self.cursor_pos -= 1;
+        self.gap_left_ptr -= 1;
+        self.data[self.cursor_pos] = 0u8;
     }
 
     pub fn insert_data(&mut self, val: char) {
@@ -71,7 +73,6 @@ impl GapBuffer {
         }
 
         self.data[self.cursor_pos] = val as u8;
-
         self.cursor_pos += 1;
         self.gap_left_ptr += 1;
     }
