@@ -21,11 +21,11 @@ Ink has multiple operating modes (Vim-like) for you to modify your file with
 
 ## Road Map
 
-- Allow for multi-line editing
+- Allow for cursor movement with arrow keys
 
 ## Known Issues
 
-- Backspace does not remove the text itself, rather just moves the gap pointers
+- Adding newline to the buffer does not reset the cursor to the first column
 
 ## Dependencies
 
@@ -34,3 +34,4 @@ Ink has multiple operating modes (Vim-like) for you to modify your file with
 ## Contributions
 
 [See contributing guidelines](/CONTRIBUTING.md#contributing-guildlines)
+
