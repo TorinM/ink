@@ -2,7 +2,7 @@
 
 Ink is a gap buffered text editor written in Rust that is meant to be ASAM (As Minimal As Possible) while providing "Vim Like" editing tools. 
 
-This project is currently in a very-early stage, see [contributions]() to see steps to apply for changes.
+This project is currently in a very-early stage, see [contributions](#contributions) to see steps to apply for changes.
 
 ## Usage
 
@@ -29,9 +29,13 @@ Ink has multiple operating modes (Vim-like) for you to modify your file with
 - Backspace does not remove the text itself, rather just moves the gap pointers
 
 
+## Dependencies
+
+- [termion](https://github.com/redox-os/termion/tree/master)
+
 ## Contributions
 
-To submit a feature request or bug, please submit a pull request to this README.md file with additions to the "Road Map" or "Known Issues" sections.
+To submit a feature request or bug, please submit a pull request to this README.md file with additions to the "[Road Map](#road-map)" or "[Known Issues](#known-issues)" sections.
 
 For larger updates, please submit a pull request and I will review.
 
