@@ -18,3 +18,8 @@ target/
 
 # MacOS
 .DS_Store
+
+# Test files
+
+*test.*
+
