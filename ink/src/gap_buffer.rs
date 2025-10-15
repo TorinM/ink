@@ -21,6 +21,18 @@ impl GapBuffer {
         }
     }
 
+    pub fn from_data(data: Vec<u8>) -> GapBuffer {
+        // TOOD: Consider adding initial padding to the buffer
+        GapBuffer {
+            cursor_pos: data.len() - 1,
+            gap_left_ptr: data.len() - 1,
+            gap_right_ptr: data.len() - 1,
+            data: data,
+            gap_size: 10
+        }
+
+    }
+
     pub fn get_diagnostics(&self) -> String {
         let s = format!("Cursor Position: {:?} | Gap Left Pointer: {:?} | Gap Right Pointer: {:?}", self.cursor_pos, self.gap_left_ptr, self.gap_right_ptr);
         s

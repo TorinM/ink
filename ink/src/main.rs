@@ -1,6 +1,8 @@
 mod operator;
 mod gap_buffer;
 
+use std::io::Read;
+use std::fs::File;
 use termion::input::TermRead;
 use termion::event::Key;
 use termion::screen::IntoAlternateScreen;
@@ -79,14 +81,22 @@ fn write_buffer<W: Write>(screen: &mut W, buffer: &gap_buffer::GapBuffer, curr_l
 fn main() {
     let mut screen = stdout().into_raw_mode().unwrap().into_alternate_screen().unwrap();
 
-    let mut curr_mode = operator::OperatorMode::O;
-    let mut gb = gap_buffer::GapBuffer::new(1);
+    let file_name = "test.py";
+    let mut file = match File::open(file_name) {
+        Ok(v) => v,
+        Err(_) => File::create(file_name).unwrap()
+    };
 
+    let mut file_data_buf: Vec<u8> = Vec::new();
+    file.read_to_end(&mut file_data_buf).unwrap();
+
+    let mut curr_mode = operator::OperatorMode::O;
+    let mut gb = gap_buffer::GapBuffer::from_data(file_data_buf); // ::new(1);
+    
     let (x, y) = termion::terminal_size().unwrap();
     write_top_banner(&mut screen, "test.py", x);
     write_bottom_banner(&mut screen, &curr_mode, y, &gb);
 
-    //write!(screen, "{}", style::Reset).unwrap();
     write!(screen, "{}{}", termion::cursor::Goto(1, 2), termion::clear::CurrentLine).unwrap();
 
     screen.flush().unwrap();
