@@ -73,7 +73,7 @@ fn write_buffer<W: Write>(screen: &mut W, buffer: &gap_buffer::GapBuffer, curr_l
         screen,
         "{}",
         buffer
-    ).unwrap(); 
+    ).unwrap();
 }
 
 fn main() {
@@ -128,8 +128,13 @@ fn main() {
                 if *c == 'q' && matches!(curr_mode, operator::OperatorMode::O) {
                     break
                 }
+
                 if matches!(curr_mode, operator::OperatorMode::E) {
-                    gb.insert_data(*c)
+                    gb.insert_data(*c);
+
+                    if *c == '\n' {
+                        gb.insert_data('\r')
+                    }
                 }
             },
             c => {

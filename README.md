@@ -25,7 +25,6 @@ Ink has multiple operating modes (Vim-like) for you to modify your file with
 
 ## Known Issues
 
-- Adding newline to the buffer does not reset the cursor to the first column
 
 ## Dependencies
 
