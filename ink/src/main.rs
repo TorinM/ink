@@ -35,7 +35,7 @@ fn write_bottom_banner<W: Write>(screen: &mut W, curr_mode: &operator::OperatorM
     
     write!(
         screen, 
-        "{}{}{}Current Mode: {:?}. Available Modes | Operator (Ctrl+O) | Edit (Ctrl+E) | File (Ctrl+F). Use 'q' in Operator Mode to quit. Buffer Status: {}",
+        "{}{}{}Current Mode: {:?}. Switch with (Ctrl+[O,E,F]. Buffer Status: {}",
         termion::cursor::Goto(1, screen_height-1),
         color::Bg(color::LightWhite),
         color::Fg(color::LightBlack),
@@ -104,7 +104,6 @@ fn main() {
     let stdin = stdin();
 
     let curr_line: u16 = 2;
-    
     write_buffer(&mut screen, &gb, curr_line);
 
     let mut displayed_error = false;
@@ -122,7 +121,6 @@ fn main() {
             Key::Ctrl('c') => break,
             Key::Ctrl('o') => curr_mode = operator::OperatorMode::O,
             Key::Ctrl('e') => curr_mode = operator::OperatorMode::E,
-            Key::Ctrl('f') => curr_mode = operator::OperatorMode::F,
             //Key::Up => pos.update(0, -1),
             //Key::Down => pos.update(0, 1),
             //Key::Left => gb.move_cursor_by(-1),
@@ -135,15 +133,22 @@ fn main() {
                 }
             },
             Key::Char(c) => {
-                if *c == 'q' && matches!(curr_mode, operator::OperatorMode::O) {
-                    break
-                }
+                match &curr_mode {
+                    operator::OperatorMode::O => {
+                        match c {
+                            'q' => break,
+                            _ => {
+                                write_error(&mut screen, format!("Key in 'O' mode not implemented: {:?}", c), y, false);
+                                displayed_error = true;
+                            }
+                        }
+                    },
+                    operator::OperatorMode::E => {
+                        gb.insert_data(*c);
 
-                if matches!(curr_mode, operator::OperatorMode::E) {
-                    gb.insert_data(*c);
-
-                    if *c == '\n' {
-                        gb.insert_data('\r')
+                        if *c == '\n' {
+                            gb.insert_data('\r');
+                        }
                     }
                 }
             },
