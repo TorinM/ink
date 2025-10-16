@@ -1,5 +1,6 @@
 mod operator;
 mod gap_buffer;
+mod file_handler;
 
 use std::io::Read;
 use std::fs::File;
@@ -9,6 +10,7 @@ use termion::screen::IntoAlternateScreen;
 use termion::raw::IntoRawMode;
 use termion::{style, color};
 use std::io::{stdout, stdin, Write};
+use termion::color::Color;
 
 fn write_top_banner<W: Write>(screen: &mut W, file_name: &str, screen_len: u16) {
     let mut s = String::from("Welcome to INK v0.1. Current file: ");
@@ -47,8 +49,8 @@ fn write_bottom_banner<W: Write>(screen: &mut W, curr_mode: &operator::OperatorM
     write!(screen, "{}", termion::cursor::Goto(1, 2)).unwrap();
 }
 
-fn write_error<W: Write>(screen: &mut W, msg: String, screen_height: u16, flush_error: bool) {
-    if flush_error {
+fn write_status<W: Write>(screen: &mut W, msg: String, screen_height: u16, flush_status: bool, is_error: bool) {
+    if flush_status {
         write!(
             screen,
             "{}{}",
@@ -57,11 +59,18 @@ fn write_error<W: Write>(screen: &mut W, msg: String, screen_height: u16, flush_
         ).unwrap()
     }
     else {
+        let status_color: &dyn Color = if is_error {
+            &color::LightRed
+        } else {
+            &color::LightGreen
+        };
+
         write!(
             screen,
-            "{}{}{}",
+            "{}{}{}{}",
             termion::cursor::Goto(1, screen_height),
-            color::Bg(color::Red),
+            color::Bg(status_color),
+            color::Fg(color::Black),
             msg
         ).unwrap();
     }
@@ -106,15 +115,15 @@ fn main() {
     let curr_line: u16 = 2;
     write_buffer(&mut screen, &gb, curr_line);
 
-    let mut displayed_error = false;
+    let mut displayed_status = false;
     
     // mainloop, each key stroke is treated as a "frame"
     for k in stdin.keys() {
         let (_x, y) = termion::terminal_size().unwrap();
 
-        if displayed_error {
-            write_error(&mut screen, "".to_string(), y, true);
-            displayed_error = false;
+        if displayed_status {
+            write_status(&mut screen, "".to_string(), y, true, true);
+            displayed_status = false;
         }
 
         match k.as_ref().unwrap() {
@@ -137,9 +146,14 @@ fn main() {
                     operator::OperatorMode::O => {
                         match c {
                             'q' => break,
+                            's' => {
+                                //file_handler::overwrite_file(&mut file)
+                                write_status(&mut screen, format!("Saved File!"), y, false, false);
+                                displayed_status = true;
+                            },
                             _ => {
-                                write_error(&mut screen, format!("Key in 'O' mode not implemented: {:?}", c), y, false);
-                                displayed_error = true;
+                                write_status(&mut screen, format!("Key in 'O' mode not implemented: {:?}", c), y, false, true);
+                                displayed_status = true;
                             }
                         }
                     },
@@ -153,8 +167,8 @@ fn main() {
                 }
             },
             c => {
-                write_error(&mut screen, format!("Key not implemented: {:?}", c), y, false);
-                displayed_error = true;
+                write_status(&mut screen, format!("Key not implemented: {:?}", c), y, false, true);
+                displayed_status = true;
             }
         };
 
