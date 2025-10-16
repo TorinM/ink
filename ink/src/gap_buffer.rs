@@ -1,5 +1,4 @@
 // Module to control the gap buffer
-
 use std::fmt;
 
 #[derive(Debug)]
@@ -30,7 +29,6 @@ impl GapBuffer {
             data: data,
             gap_size: 10
         }
-
     }
 
     pub fn get_diagnostics(&self) -> String {
