@@ -14,17 +14,18 @@ ink <file_name>
 
 ### Operators
 
-Ink has multiple operating modes (Vim-like) for you to modify your file with
+At the core of Ink are operating modes, which provide different operations:
 
-1. Operator (`O`): The default mode which allows for saving the file and safely exit
+1. Operator (`O`): The default mode which allows for saving the file and safely exit.
 2. Editor (`E`): Editing mode, which allows for text insertions. Use arrow keys to navigate the file.
+
+### Switching
+
+To switch an editor at any time, use the `Ctrl+[KEY]` pattern. For example, to switch to "Editor" mode, use `Ctrl+e`
 
 ## Road Map
 
 - Allow for cursor movement with arrow keys
-
-## Known Issues
-
 
 ## Dependencies
 
@@ -33,4 +34,3 @@ Ink has multiple operating modes (Vim-like) for you to modify your file with
 ## Contributions
 
 [See contributing guidelines](/CONTRIBUTING.md#contributing-guildlines)
-
