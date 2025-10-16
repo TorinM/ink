@@ -2,8 +2,8 @@ mod operator;
 mod gap_buffer;
 mod file_handler;
 
-use std::io::Read;
-use std::fs::File;
+use std::io::{SeekFrom, Seek, Read};
+use std::fs::OpenOptions;
 use termion::input::TermRead;
 use termion::event::Key;
 use termion::screen::IntoAlternateScreen;
@@ -32,7 +32,6 @@ fn write_top_banner<W: Write>(screen: &mut W, file_name: &str, screen_len: u16) 
 }
 
 fn write_bottom_banner<W: Write>(screen: &mut W, curr_mode: &operator::OperatorMode, screen_height: u16, buffer: &gap_buffer::GapBuffer) {
-
     write!(screen, "{}{}", termion::cursor::Goto(1, screen_height-1), termion::clear::CurrentLine).unwrap();
     
     write!(
@@ -91,17 +90,19 @@ fn main() {
     let mut screen = stdout().into_raw_mode().unwrap().into_alternate_screen().unwrap();
 
     let file_name = "test.py";
-    let mut file = match File::open(file_name) {
-        Ok(v) => v,
-        Err(_) => File::create(file_name).unwrap()
-    };
+    let mut file = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .create(true)
+        .open(file_name).unwrap();
+    file.seek(SeekFrom::Start(0)).unwrap();
 
     let mut file_data_buf: Vec<u8> = Vec::new();
     file.read_to_end(&mut file_data_buf).unwrap();
 
     let mut curr_mode = operator::OperatorMode::O;
-    let mut gb = gap_buffer::GapBuffer::from_data(file_data_buf); // ::new(1);
-    
+    let mut gb = gap_buffer::GapBuffer::from_data(file_data_buf);
+
     let (x, y) = termion::terminal_size().unwrap();
     write_top_banner(&mut screen, "test.py", x);
     write_bottom_banner(&mut screen, &curr_mode, y, &gb);
@@ -147,8 +148,10 @@ fn main() {
                         match c {
                             'q' => break,
                             's' => {
-                                //file_handler::overwrite_file(&mut file)
-                                write_status(&mut screen, format!("Saved File!"), y, false, false);
+                                match file_handler::overwrite_file(&mut file, &gb.get_data()) {
+                                    Ok(_) => write_status(&mut screen, "Saved File!".to_string(), y, false, false),
+                                    Err(e) => write_status(&mut screen, format!("Failed to save file with error: {:?}", e), y, false, true)
+                                }
                                 displayed_status = true;
                             },
                             _ => {
