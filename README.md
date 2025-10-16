@@ -4,6 +4,10 @@ Ink is a gap buffered text editor written in Rust that is meant to be "ASAM" (As
 
 This project is currently in a very-early stage, see [contributions](#contributions) to see steps to apply for changes.
 
+## Example
+
+![Example](./docs/img/Ink%20Example.png)
+
 ## Usage
 
 Ink lets you focus on a single file at a time to maximize the experience. You can open a file using
@@ -11,6 +15,7 @@ Ink lets you focus on a single file at a time to maximize the experience. You ca
 ```bash
 ink <file_name>
 ```
+
 - `<file_name>` should be either the name of an existing file or a new file to create. Use relative path.
 
 ### Operators
