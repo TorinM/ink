@@ -89,12 +89,12 @@ fn write_buffer<W: Write>(screen: &mut W, buffer: &gap_buffer::GapBuffer, curr_l
 fn main() {
     let mut screen = stdout().into_raw_mode().unwrap().into_alternate_screen().unwrap();
 
-    let file_name = "test.py";
+    let file_name = file_handler::get_file_name().unwrap();
     let mut file = OpenOptions::new()
         .read(true)
         .write(true)
         .create(true)
-        .open(file_name).unwrap();
+        .open(file_name.clone()).unwrap();
     file.seek(SeekFrom::Start(0)).unwrap();
 
     let mut file_data_buf: Vec<u8> = Vec::new();
@@ -104,7 +104,7 @@ fn main() {
     let mut gb = gap_buffer::GapBuffer::from_data(file_data_buf);
 
     let (x, y) = termion::terminal_size().unwrap();
-    write_top_banner(&mut screen, "test.py", x);
+    write_top_banner(&mut screen, &file_name, x);
     write_bottom_banner(&mut screen, &curr_mode, y, &gb);
 
     write!(screen, "{}{}", termion::cursor::Goto(1, 2), termion::clear::CurrentLine).unwrap();
